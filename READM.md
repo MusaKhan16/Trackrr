@@ -1,0 +1,3 @@
+# A simple and neat tracking system allowing people to manage mountain bike trails with nifty functionality
+
+Made for a school project...
