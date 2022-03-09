@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "trackrr"
+version = "0.1.0"
+description = "A simple management system able to track and record mountain biking trails with ease for a school project"
+authors = ["Musa Khan <57375561+MusaMoses@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+tinydb = "^4.7.0"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
