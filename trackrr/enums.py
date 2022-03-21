@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class TrackDifficulties(str, Enum):
+class TrackDifficulty(str, Enum):
     WHITE_CIRCLE = "Very Easy"
     GREEN_CIRCLE = "Easy"
     BLUE_SQUARE = "Difficult"
