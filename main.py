@@ -1,5 +1,5 @@
 import trackrr as tr
-from typing import Optional
+from typing import Optional, NotImplemented
 from dataclasses import asdict
 from rich.console import Console
 
@@ -7,8 +7,8 @@ from rich.console import Console
 def main():
 
     descision_mapping = {
-        "C": prompt_track,
-        "R": prompt_review_track,
+        "c": prompt_track,
+        "r": prompt_review_track,
     }
 
     user_descision = ""
@@ -18,10 +18,10 @@ def main():
     )
     console.print("You can add trails to the database OR review old ones to be updated")
 
-    while user_descision != "L":
+    while user_descision != "l":
         user_descision = input(
             "\n[L] Leave || [C] Create new Track || [R] Review track from database: "
-        )
+        ).lower()
 
         if user_descision != "L" and user_descision in descision_mapping:
             descision_mapping.get(user_descision)()
@@ -32,7 +32,7 @@ def main():
 def prompt_review_track():
     console.print("Attempting to Load tracks from database...")
 
-    descision_mapping = {"a": tr.Trail.get_paths_under_construction}
+    descision_mapping = {"a": print_paths_under_construction}
 
     tracks = database.all()
 
@@ -44,14 +44,14 @@ def prompt_review_track():
     console.print("\n[green]Loaded tracks![/green] :white_check_mark:")
 
     for idx, trail in enumerate(tracks):
-        console.print(f"[bold]{idx + 1}[/bold].{trail}")
+        console.print(f"[bold]{idx + 1}.[/bold]", trail.padded_repr())
 
     user_index_choice = (
         tr.Prompt(
             name="user_trail_index",
             message="Which Trail do you want to check? Pass an index",
             d_type=int,
-            custom_validator=lambda num: num > 0 or None,
+            custom_validator=(lambda num: len(tracks) >= num > 0 or None),
         ).prompt_user()
         - 1
     )
@@ -64,7 +64,7 @@ def prompt_review_track():
         "What do you want to do with the Trail [a](Retrieve Sections under Construction): "
     )
 
-    print(descision_mapping.get(user_desicion_choice)(user_trail_choice))
+    descision_mapping.get(user_desicion_choice)(user_trail_choice)
 
 
 def prompt_track():
@@ -149,6 +149,16 @@ def prompt_track():
 
 def validate_numbers(num: int) -> Optional[bool]:
     return num >= 0 or None
+
+
+def print_paths_under_construction(trail: tr.Trail):
+    for path in trail.get_paths_under_construction():
+        console.print(path)
+
+
+def prompt_metric_conversion(trail: tr.Trail):
+    """To be implemented"""
+    ...
 
 
 if __name__ == "__main__":

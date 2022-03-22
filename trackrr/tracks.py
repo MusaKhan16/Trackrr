@@ -31,7 +31,9 @@ class Path:
 
 @dataclass
 class Trail:
-    """Trail Class To initialize a mountain bike Track"""
+    """
+    Trail Class To initialize a mountain bike Track
+    """
 
     name: str
     description: str
@@ -65,6 +67,7 @@ class Trail:
         return [path for path in self.sections if path.under_construction]
 
     def add_section(self, path: Path):
+        """Performs a side effect appending a path to the sections array"""
         self.sections.append(path)
 
     def padded_repr(self):
@@ -79,7 +82,8 @@ class Trail:
             f"Elevation above ground: {self.elevation} meters\n"
             f"Amount of sections: {len(self.sections)}\n"
             f"Total distance: {self.total_distance} meters\n"
-            f"Under Construction: {self.under_contruction}\n"
+            f"Under Construction: {self.under_contruction}\n\n"
+            f"{self.description}\n{'_'*50}\n"
             f"Sections:"
             + ("\n\t".join(map(str, self.sections)) if self.sections else "\n\tNone")
         )
