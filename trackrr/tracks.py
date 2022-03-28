@@ -20,6 +20,17 @@ class Path:
         if not isinstance(self.terrain_type, TerrainType):
             self.terrain_type = TerrainType(self.terrain_type)
 
+    def padded_repr(self):
+        return Padding(str(self), (0, 4))
+
+    def update_distance(self, new_distance: int | float):
+        """Updates distance to new converted metric"""
+        self.distance *= new_distance
+
+    def update_angle_slant(self, new_angle_slant: int | float):
+        """Updates the angle to new converted metric"""
+        self.angle_slant *= new_angle_slant
+
     def __str__(self):
         """Representation of a section of a trail/path"""
 
@@ -58,7 +69,7 @@ class Trail:
         return sum(path.distance for path in self.sections)
 
     @property
-    def under_contruction(self):
+    def under_construction(self):
         """Return a boolean depending on whether any section is under construction"""
         return any(path.under_construction for path in self.sections)
 
@@ -67,11 +78,20 @@ class Trail:
         return [path for path in self.sections if path.under_construction]
 
     def add_section(self, path: Path):
-        """Performs a side effect appending a path to the sections array"""
+        """Appends a path to the sections array"""
         self.sections.append(path)
+
+    def remove_section(self, index: int):
+        """Removes a section from the sections array depending on a given index"""
+        self.sections.pop(index)
 
     def padded_repr(self):
         return Padding(str(self), (0, 4))
+
+    def update_metrics(
+        self,
+    ):
+        """Updates the metrics of the trail"""
 
     def __str__(self):
         """A string representation of the Trail Object"""
@@ -82,7 +102,7 @@ class Trail:
             f"Elevation above ground: {self.elevation} meters\n"
             f"Amount of sections: {len(self.sections)}\n"
             f"Total distance: {self.total_distance} meters\n"
-            f"Under Construction: {self.under_contruction}\n\n"
+            f"Under Construction: {self.under_construction}\n\n"
             f"{self.description}\n{'_'*50}\n"
             f"Sections:"
             + ("\n\t".join(map(str, self.sections)) if self.sections else "\n\tNone")

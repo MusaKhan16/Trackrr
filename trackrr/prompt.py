@@ -1,4 +1,10 @@
+"""A simple prompt api to gather small bits of data like input function, as well as validate it for simple and cleaner code."""
+
 from typing import Any, Callable, Optional
+
+CustomValidator = Callable[
+    [Any], bool
+]  # A custom validator function that retunrs a boolean if certain requirements are met to the developers standards.
 
 
 class Prompt:
@@ -6,10 +12,10 @@ class Prompt:
 
     def __init__(
         self,
-        name: str,
-        message: str,
+        name: str = "",
+        message: str = "",
         d_type: Any = str,
-        custom_validator: Optional[Callable] = None,
+        custom_validator: Optional[CustomValidator] = None,
     ):
         self.name = name
         self.message = message
@@ -24,18 +30,15 @@ class Prompt:
         return answer
 
     def validate_answer(self, answer: str) -> Optional[Any]:
-        if isinstance(answer, self.d_type):
-            return answer
-
         try:
             parsed_data = self.d_type(answer)
         except ValueError:
-            print(f"That isn't a {self.d_type.__name__}")
+            print(f"That isn't a valid {self.d_type.__name__}")
         else:
             if not self.custom_validator:
                 return parsed_data
 
-            if self.custom_validator(parsed_data):
+            elif self.custom_validator(parsed_data):
                 return parsed_data
 
 

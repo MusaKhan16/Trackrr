@@ -8,12 +8,17 @@ class TrackDatabase(TinyDB):
         """Inserts item in the database but runs validation checks beforehand"""
         if not self._is_unique(item["name"]):
             raise NotUnique(item["name"])
-
         self.insert(item)
 
     def _is_unique(self, name: str) -> bool:
         """Checks if an item with the same name already exists in the database"""
         return not self.search(where("name") == name)
+
+    def delete_item(self, item: dict):
+        self.remove(where("name") == item["name"])
+
+    def update_item(self, item: dict):
+        self.update(item, where("name") == item["name"])
 
 
 class NotUnique(Exception):
