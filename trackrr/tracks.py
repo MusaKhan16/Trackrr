@@ -23,13 +23,9 @@ class Path:
     def padded_repr(self):
         return Padding(str(self), (0, 4))
 
-    def update_distance(self, new_distance: int | float):
+    def update_distance(self, distance_metric: int | float):
         """Updates distance to new converted metric"""
-        self.distance *= new_distance
-
-    def update_angle_slant(self, new_angle_slant: int | float):
-        """Updates the angle to new converted metric"""
-        self.angle_slant *= new_angle_slant
+        self.distance *= distance_metric
 
     def __str__(self):
         """Representation of a section of a trail/path"""

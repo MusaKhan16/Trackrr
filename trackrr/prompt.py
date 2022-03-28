@@ -16,24 +16,30 @@ class Prompt:
         message: str = "",
         d_type: Any = str,
         custom_validator: Optional[CustomValidator] = None,
+        transformer: Optional[Callable] = None,
     ):
         self.name = name
         self.message = message
         self.d_type = d_type
         self.custom_validator = custom_validator
+        self.transfomer = transformer
 
     def prompt_user(self):
         answer = None
 
         while answer is None:
             answer = self.validate_answer(input(self.message + ": "))
+
+            if (answer is not None) and self.transfomer:
+                return self.transfomer(answer)
+
         return answer
 
     def validate_answer(self, answer: str) -> Optional[Any]:
         try:
             parsed_data = self.d_type(answer)
         except ValueError:
-            print(f"That isn't a valid {self.d_type.__name__}")
+            print(f"\nThat isn't a valid {self.d_type.__name__}\n")
         else:
             if not self.custom_validator:
                 return parsed_data

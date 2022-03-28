@@ -10,6 +10,7 @@ def convert_metric_distance(conversion_metric: str) -> float | int:
     """Converts meters to another distance from a mapping"""
 
     conversion_mapping = {
+        "mm": 1000,
         "cm": 100,
         "km": 0.01,
         "mi": 0.001,

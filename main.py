@@ -1,9 +1,14 @@
+from turtle import distance
 import trackrr as tr
 import validators
 import utils
 
 from dataclasses import asdict
 from rich.console import Console
+from copy import deepcopy
+
+
+# Make sure degrees dont go over or below 360
 
 
 def main():
@@ -36,7 +41,7 @@ def prompt_review_track():
 
     console.print("Attempting to Load tracks from database...")
 
-    decision_mapping = {
+    sub_prompt_decision_mapping = {
         "a": print_paths_under_construction,
         "b": prompt_metric_conversion,
         "d": prompt_trail_deletion,
@@ -78,7 +83,7 @@ def prompt_review_track():
                 message="""\nWhat do you want to do with the Trail? type nothing to leave\n\t[a](Retrieve Sections under Construction)\n\t[b](Perform metric conversions on the numbers distance, elevation, angle)\n\t[sd](Delete a section)\n\t[sc](Add Section)\n\t[d](Delete the trail)\n[L](Leave)""",
                 custom_validator=(
                     lambda user_decision: user_decision.lower()
-                    in decision_mapping.keys()
+                    in sub_prompt_decision_mapping.keys()
                     or user_decision.lower() == "l"
                 ),
             )
@@ -90,10 +95,10 @@ def prompt_review_track():
             return
 
         if user_decision_choice.lower() == "d":
-            decision_mapping.get("d")(user_trail_choice)
+            sub_prompt_decision_mapping.get("d")(user_trail_choice)
             break  # Justifiable use for break, this case is a wildcard and would be better of taken care with a simple keyword.
 
-        decision_mapping.get(user_decision_choice)(user_trail_choice)
+        sub_prompt_decision_mapping.get(user_decision_choice)(user_trail_choice)
 
 
 def prompt_trail_creation():
@@ -122,10 +127,10 @@ def prompt_trail_creation():
     console.print("\nSuccessfully created Trail object:\n", current_trail.padded_repr())
 
     user_path_choice = input(
-        "\nDo you possibly want to add any sections to the track Yes [Y] No [N]: "
-    )
+        "\nDo you possibly want to add any sections to the track Yes [Y default] No [N]: "
+    ).lower()
 
-    while user_path_choice != "N":
+    while user_path_choice != "n":
         user_created_path = tr.get_multiple_input(
             (
                 tr.Prompt(
@@ -147,7 +152,7 @@ def prompt_trail_creation():
                 ),
                 tr.Prompt(
                     name="under_construction",
-                    message="Is this section under construction? type nothing if false",
+                    message="Is this section under construction? True ortype nothing if false",
                     d_type=bool,
                 ),
             )
@@ -163,8 +168,8 @@ def prompt_trail_creation():
             current_trail.add_section(user_created_path_object)
 
         user_path_choice = input(
-            "Do you want to add another track? default is [Y] Yes or type [N] for no: "
-        )
+            "Do you want to add another section default is [Y] Yes or type [N] for no: "
+        ).lower()
 
     try:
         database.insert_item(asdict(current_trail))
@@ -191,10 +196,9 @@ def print_paths_under_construction(trail: tr.Trail):
 def prompt_metric_conversion(trail: tr.Trail):
     """Prompts a sequence of questions on metric conversion"""
 
-    distance_metric = (
-        tr.Prompt(
-            message=(
-                """
+    distance_metric = tr.Prompt(
+        message=(
+            """
                 Enter the new units you want to convert distance currently [m]
                 Options: 
                     Distance 📏:
@@ -203,29 +207,42 @@ def prompt_metric_conversion(trail: tr.Trail):
                         [CM]: Centimeters
                         [MI]: Miles
                 """
-            ),
-            custom_validator=(
-                lambda answer: answer.lower() in ["m", "mm", "cm", "km", "mi"]
-            ),
-        )
-        .prompt_user()
-        .lower()
+        ),
+        custom_validator=(lambda answer: answer.lower() in ["mm", "cm", "km", "mi"]),
+        transformer=str.lower,
+    ).prompt_user()
+
+    user_wants_radians = tr.Prompt(
+        message="Do you want to convert degrees to radians?",
+        custom_validator=(lambda answer: answer.lower() in ("yes", "no")),
+        transformer=validators.confirm_verification,
+    ).prompt_user()
+
+    new_trail_elevation = trail.elevation * utils.convert_metric_distance(
+        distance_metric
     )
 
-    for path in trail.sections.copy():
+    console.print(f"\nTrail Elevation {new_trail_elevation}{distance_metric}")
+
+    for idx, path in enumerate(deepcopy(trail.sections)):
         path.update_distance(utils.convert_metric_distance(distance_metric))
-        console.print(path.padded_repr())
+
+        if user_wants_radians:
+            path.angle_slant = utils.convert_to_radians(path.angle_slant)
+
+        console.print(
+            f"\nPath {idx + 1}.) {path.distance=}{distance_metric} {path.angle_slant=}{'rad' if user_wants_radians else 'deg'}\n"
+        )
 
 
 def prompt_trail_deletion(trail: tr.Trail):
     """A series of prompts that will allow a user to delete a trail"""
 
-    user_verification = validators.confirm_verification(
-        tr.Prompt(
-            message="Are you sure you want to delete this",
-            custom_validator=(lambda answer: answer.lower() in ("yes", "no")),
-        ).prompt_user()
-    )
+    user_verification = tr.Prompt(
+        message="Are you sure you want to delete this",
+        custom_validator=(lambda answer: answer.lower() in ("yes", "no")),
+        transformer=validators.confirm_verification,
+    ).prompt_user()
 
     if not user_verification:
         console.print("[cyan bold]OK object not deleted[/cyan bold]")
@@ -245,7 +262,7 @@ def prompt_creation_of_sections(trail: tr.Trail):
                 name="angle_slant",
                 message="Enter the slant of the section in degrees",
                 d_type=int,
-                custom_validator=validators.is_positive,
+                custom_validator=(lambda angle: -360 <= angle <= 360),
             ),
             tr.Prompt(
                 name="distance",
@@ -272,7 +289,7 @@ def prompt_creation_of_sections(trail: tr.Trail):
 
     user_verification = validators.confirm_verification(
         tr.Prompt(
-            message=f"Are you sure you want to create this path?",
+            message=f"Are you sure you want to create this path [Yes, No]?",
             custom_validator=(lambda answer: answer.lower() in ("yes", "no")),
         ).prompt_user()
     )
@@ -306,7 +323,7 @@ def prompt_deletion_of_sections(trail: tr.Trail):
 
     user_verification = validators.confirm_verification(
         tr.Prompt(
-            message=f"Are you sure you want to delete this {trail.sections[user_index_choice]}",
+            message=f"Are you sure you want to delete this {trail.sections[user_index_choice]} [Yes, No]",
             custom_validator=(lambda answer: answer.lower() in ("yes", "no")),
         ).prompt_user()
     )
