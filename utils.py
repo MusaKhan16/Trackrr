@@ -12,7 +12,7 @@ def convert_metric_distance(conversion_metric: str) -> float | int:
     conversion_mapping = {
         "mm": 1000,
         "cm": 100,
-        "km": 0.01,
-        "mi": 0.001,
+        "km": 0.001,
+        "mi": 0.000621371,
     }
     return conversion_mapping.get(conversion_metric, 1)

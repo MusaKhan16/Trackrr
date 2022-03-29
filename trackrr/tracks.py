@@ -32,7 +32,7 @@ class Path:
 
         return (
             f"\nDistance: {self.distance} meters at an angle of {self.angle_slant}°\n"
-            f"Type of terrain {self.terrain_type}\n"
+            f"Type of terrain {self.terrain_type} | under construction = {self.under_construction}"
         )
 
 
@@ -83,11 +83,6 @@ class Trail:
 
     def padded_repr(self):
         return Padding(str(self), (0, 4))
-
-    def update_metrics(
-        self,
-    ):
-        """Updates the metrics of the trail"""
 
     def __str__(self):
         """A string representation of the Trail Object"""
