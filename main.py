@@ -160,7 +160,7 @@ def prompt_metric_conversion(trail: tr.Trail):
                         [MM]: Milimeters
                         [CM]: Centimeters
                         [MI]: Miles
-                """
+            """
         ),
         custom_validator=(lambda answer: answer.lower() in ["mm", "cm", "km", "mi"]),
         transformer=str.lower,
@@ -188,7 +188,7 @@ def prompt_metric_conversion(trail: tr.Trail):
 
     console.print(f"\nTrail Elevation {new_trail_elevation}{distance_metric}")
     console.print(
-        f"\nNew total distance = {trail.total_distance * metric_conversion_number}"
+        f"\nNew total distance = {trail.total_distance * metric_conversion_number}{distance_metric}"
     )
 
 
@@ -218,7 +218,7 @@ def prompt_creation_of_sections(trail: tr.Trail):
     console.print(new_user_created_path.padded_repr())
 
     user_verification = quick_prompts.ConfirmationPrompt(
-        "Are you sure you want to create this path",
+        "\nAre you sure you want to create this path",
     ).prompt_user()
 
     if not user_verification:
